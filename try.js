@@ -1,91 +1,71 @@
 /**
- * 中缀表达式转后缀表达式
- * @param {String} infixExpression 中缀表达式
- * @return {<String>} 后缀表达式
+ * ListNode链表节点
+ * @param {Number} input 节点的数值
+ * @param {ListNode} succ 节点的前驱
+ * @param {ListNode} pred 节点的后继
+ */
+const ListNode = function(input = void 0, succ = void 0, pred = void 0){
+    this.data = input;
+    this.succ = succ;
+    this.pred = pred;
+}
+
+/**
+ * 桶排序所需的桶，用链表来表示。
+ * @param {Number} input 当前桶所代表的值
  * @public
  */
-const transformIntoRPN = function(infixExpression){
-    let mid = infixExpression.split(' ');
-    let RPN = []; let operators = [];
-    let i = 0; let currentChar = '';
-    operatorsArray= {'+': 0,'-': 1,'x': 2,'/': 3,'%': 4,'#': 5};
-    const priorityMatrix = [
-/* + */    [1, 1, 0, 0, 0, 1],
-/* - */    [1, 1, 0, 0, 0, 1],
-/* * */    [1, 1, 1, 1, 1, 1],
-/* / */    [1, 1, 1, 1, 1, 1],
-/* % */    [1, 1, 1, 1, 1, 1],
-/* # */    [0, 0, 0, 0, 0, 2]];
-    operators.push('#');
-    while(i < mid.length){
-        currentChar = mid[i]
-        if(!!Number(currentChar)){
-            RPN.push(currentChar)
-        }else{
-            switch (priorityMatrix[operators.slice(-1)[0]][currentChar]){
-                case 0:
-                    operators.push(currentChar);
-                    i++;
-                    break;
-                case 1:
-                    RPN.push(operators.pop());
-                    break;
-                case 2:
-                    operators.pop();
-                    i++;
-            }
-        }
-    }
-    while(operators.length > 1){
-        RPN.push(operators.pop());
-    }
-    return RPN;
+const LinkList = function(input){
+    this._header = new ListNode();
+    this._tail = new ListNode();
+    this.size = 0;
+    this.data = input;
+    this._header.succ = this._tail;
+    this._tail.pred = this._header;
 }
 
-/** 
- * 计算表达式
- * @param {String} operator 输入的运算符
- * @param {Number} left 左值
- * @param {Number} right 右值
- * @return {Number} 计算结果
-*/
-const calcOperator = function(operator, left, right){
-    switch(operator){
-        case '+':
-            return left + right;
-        case '-':
-            return right - left;
-        case 'x':
-            return left * right;
-        case '/':
-            return right /left;
-        case '%':
-            return right % left;
-    }
-}
-
-/** 
- * 计算后缀表达式求解
- * 整体流程是，如果是运算数就入辅助栈，如果是运算符就从辅助栈出相应数量的运算数运算。
- * 取得结果后再推回栈中
- * @param {Array<String>} RPN 后缀表达式
- * @return {Number} 后缀表达式的解
+/**
+ * 将一个元素插入桶
+ * @param {Number} input 当前桶所代表的值
  * @public
- * */ 
-const calcRPN = function(RPN){
-    let S = [];
-    let mid = '';
-    while(RPN.length > 0){
-        mid = RPN.pop();
-        if(!!Number(mid)){
-            S.push(mid);
-        }else{
-            S.push(calcOperator(mid, S.pop(), S.pop()));
-        }
+ */
+LinkList.prototype.insert() = function(input){
+    let m = this._header;
+    while(m.succ !== this._tail){
+        if(!!m.data && m.data > input){break;}
+        m = m.succ;
     }
-    return S.pop();
+    let newNode = new ListNode(input, m.pred, m);
+    m.pred.succ = newNode;
+    m.pred = newNode;
+    this.size++;
 }
 
-const calc = function(input){
-        
+/**
+ * 桶排序
+ * @param {Array<Number>} 输入的数据
+ * @param {Number} 桶的间距
+ * @return {Array<Number>} 已排序好的数据
+ * @public
+ */
+const BucketSort = function(input, gap){
+    this.getBucketOrder = v => ~~(v / 10) % gap;
+    let re = [];
+    const buckets = [];
+    let current, bucketIndex = void 0;
+    for(let i = 0; i<input.length ;i++){
+        current = input[i]; bucketIndex = this.getBucketOrder(current);
+        !buckets[bucketIndex] && (buckets[bucketIndex] = new LinkList(bucketIndex + gap));
+        if(!!buckets[bucketIndex]){
+            buckets[bucketIndex].insert(current);
+        }
+    }
+    buckets.forEach(v=>{
+        let m = v._header;
+        while(m !== v._tail){
+            re.push(m.data);
+            m = m.succ;
+        }
+    })
+    return buckets;
 }
