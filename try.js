@@ -1,71 +1,23 @@
-/**
- * ListNode链表节点
- * @param {Number} input 节点的数值
- * @param {ListNode} succ 节点的前驱
- * @param {ListNode} pred 节点的后继
- */
-const ListNode = function(input = void 0, succ = void 0, pred = void 0){
-    this.data = input;
-    this.succ = succ;
-    this.pred = pred;
+const father = function(firstName = void 0, LastName = void 0){
+    this.firstName = firstName;
+    this.lastName = LastName;
 }
 
-/**
- * 桶排序所需的桶，用链表来表示。
- * @param {Number} input 当前桶所代表的值
- * @public
- */
-const LinkList = function(input){
-    this._header = new ListNode();
-    this._tail = new ListNode();
-    this.size = 0;
-    this.data = input;
-    this._header.succ = this._tail;
-    this._tail.pred = this._header;
-}
+father.prototype.newChild = function(firstName){
+    return new father(firstName, this.lastName)
+};
 
-/**
- * 将一个元素插入桶
- * @param {Number} input 当前桶所代表的值
- * @public
- */
-LinkList.prototype.insert() = function(input){
-    let m = this._header;
-    while(m.succ !== this._tail){
-        if(!!m.data && m.data > input){break;}
-        m = m.succ;
-    }
-    let newNode = new ListNode(input, m.pred, m);
-    m.pred.succ = newNode;
-    m.pred = newNode;
-    this.size++;
-}
+const a = new father('s', 'asd');
+//a.constructor.name = 'father'
 
-/**
- * 桶排序
- * @param {Array<Number>} 输入的数据
- * @param {Number} 桶的间距
- * @return {Array<Number>} 已排序好的数据
- * @public
- */
-const BucketSort = function(input, gap){
-    this.getBucketOrder = v => ~~(v / 10) % gap;
-    let re = [];
-    const buckets = [];
-    let current, bucketIndex = void 0;
-    for(let i = 0; i<input.length ;i++){
-        current = input[i]; bucketIndex = this.getBucketOrder(current);
-        !buckets[bucketIndex] && (buckets[bucketIndex] = new LinkList(bucketIndex + gap));
-        if(!!buckets[bucketIndex]){
-            buckets[bucketIndex].insert(current);
+//extend 拓展一个目标对象的属性
+function extend(target, source) {
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    for (var propName in source) {
+        // 把this绑定到source对象, 之后再调用hasOwnProperty()方法
+        if (hasOwnProperty.call(source, propName)) {
+            target[propName] = source[propName];
         }
     }
-    buckets.forEach(v=>{
-        let m = v._header;
-        while(m !== v._tail){
-            re.push(m.data);
-            m = m.succ;
-        }
-    })
-    return buckets;
+    return target;
 }
